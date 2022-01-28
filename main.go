@@ -1,6 +1,11 @@
 package main
 
 import (
+	"awcoding.com/back/data/database"
+	datUsers "awcoding.com/back/data/users"
+	"awcoding.com/back/domain/auth"
+	"awcoding.com/back/domain/core"
+	"awcoding.com/back/domain/users"
 	"awcoding.com/back/infrastructure/config"
 	"awcoding.com/back/routes"
 	"context"
@@ -39,8 +44,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	handler := routes.NewHandler()
+	db, err := database.ConnectPostgresDB(cfg.DBConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	if err := database.ApplyMigrations(db.DB, cfg.DBConfig.MigrationsPath); err != nil {
+		log.Fatal(err)
+	}
+
+	usersRepository := datUsers.NewRepository(db)
+	userService := users.NewService(usersRepository)
+	authService := auth.NewService(userService, cfg)
+	appServices := core.NewAppService(userService, authService)
+
+	handler := routes.NewHandler(appServices)
 	srv := new(server)
 
 	go func() {

@@ -1,13 +1,15 @@
 package routes
 
 import (
+	"awcoding.com/back/domain/core"
+	"awcoding.com/back/domain/users"
 	"awcoding.com/back/routes/auth"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func NewHandler() http.Handler {
+func NewHandler(s *core.AppServices) http.Handler {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
@@ -18,10 +20,16 @@ func NewHandler() http.Handler {
 		AllowWildcard: true,
 	}))
 
+	authGroup := router.Group("/auth")
+	auth.NewRoutesFactory(authGroup)(s.AuthService)
 	apiGroup := router.Group("/api")
 	{
-		authGroup := apiGroup.Group("/auth")
-		auth.NewRoutesFactory(authGroup)()
+		apiGroup.Use(auth.NewJWTMiddlewareFactory(s.AuthService))
+
+		apiGroup.GET("test", func(ctx *gin.Context) {
+			user := ctx.MustGet("user").(*users.User)
+			ctx.JSON(http.StatusOK, user)
+		})
 	}
 
 	return router

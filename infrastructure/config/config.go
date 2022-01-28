@@ -14,27 +14,44 @@ type HttpServerConfig struct {
 	CertKey string
 }
 
-type preferences struct {
-	ENV              string
-	HttpServerConfig HttpServerConfig
+type DBConfig struct {
+	Host           string
+	Port           string
+	Username       string
+	Pasword        string
+	DBName         string
+	SSLMode        string
+	MigrationsPath string
 }
 
-var instance *preferences
+type Secret struct {
+	Salt     string
+	TokenKey string
+}
+
+type Config struct {
+	ENV              string
+	HttpServerConfig HttpServerConfig
+	DBConfig         DBConfig
+	Secret           Secret
+}
+
+var instance *Config
 var once sync.Once
 
 // GetInstance Возвращает текущий экземплар настроек
-func GetInstance() *preferences {
+func GetInstance() *Config {
 	once.Do(func() {
-		instance = new(preferences)
+		instance = new(Config)
 	})
 	return instance
 }
 
-// Reload Перечитывает настроки из .env файла и
+// Reload Перечитывает настроки из ..env файла и
 // сохраняет по переданному указателю
 // в случает ошибки вернет ошибку, при
 // успехе - nil
-func Reload(c *preferences) error {
+func Reload(c *Config) error {
 	if err := godotenv.Load(); err != nil {
 		return err
 	}
@@ -42,13 +59,13 @@ func Reload(c *preferences) error {
 	return nil
 }
 
-// Load читает настроки из .env файла и
+// Load читает настроки из ..env файла и
 // сохраняет по переданному указателю
 // в случает ошибки вернет ошибку, при
 // успехе - nil
 // Если настройки были ранее прочитаны, вернет ошибку,
 // для этой задачи используется метод Reload
-func Load(c *preferences) error {
+func Load(c *Config) error {
 	if c.ENV == "" {
 		return Reload(c)
 	}
@@ -62,7 +79,7 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-func loadEnvs(c *preferences) {
+func loadEnvs(c *Config) {
 	c.ENV = os.Getenv("ENV")
 
 	serverConfig := HttpServerConfig{}
@@ -71,5 +88,19 @@ func loadEnvs(c *preferences) {
 	serverConfig.Host = getEnv("server.host", "")
 	serverConfig.Port = getEnv("server.port", "8443")
 
+	dbConfig := DBConfig{}
+	dbConfig.Host = getEnv("db.host", "localhost")
+	dbConfig.Port = getEnv("db.port", "5432")
+	dbConfig.Username = getEnv("db.username", "postgres")
+	dbConfig.Pasword = getEnv("db.password", "postgres")
+	dbConfig.DBName = getEnv("db.name", "test")
+	dbConfig.SSLMode = getEnv("db.sslmode", "disable")
+	dbConfig.MigrationsPath = getEnv("db.migrationspath", "./migrations")
+
+	secret := Secret{}
+	secret.Salt = getEnv("secret.salt", "secretSalt")
+	secret.TokenKey = getEnv("secret.tokenkey", "secretToken")
+
 	c.HttpServerConfig = serverConfig
+	c.DBConfig = dbConfig
 }
