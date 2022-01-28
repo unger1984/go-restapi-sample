@@ -37,9 +37,6 @@ func (s *Service) SignIn(login string, password string) (*Auth, error) {
 	if err != nil {
 		return nil, errors.New("login and password incorrect")
 	}
-	if user == nil {
-		return nil, errors.New("user not found")
-	}
 	token, err := s.generateToken(user)
 	if err != nil {
 		return nil, err

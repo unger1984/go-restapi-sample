@@ -1,11 +1,14 @@
 package routes
 
 import (
+	_ "awcoding.com/back/docs"
 	"awcoding.com/back/domain/core"
 	"awcoding.com/back/domain/users"
 	"awcoding.com/back/routes/auth"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"net/http"
 )
 
@@ -19,6 +22,8 @@ func NewHandler(s *core.AppServices) http.Handler {
 		AllowHeaders:  []string{"*"},
 		AllowWildcard: true,
 	}))
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	authGroup := router.Group("/auth")
 	auth.NewRoutesFactory(authGroup)(s.AuthService)

@@ -1,0 +1,73 @@
+basePath: /
+definitions:
+  auth.Auth:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/users.User'
+    type: object
+  auth.signInInput:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  core.errorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  users.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: This is a sample REST API server.
+  title: Swagger Back API
+  version: "1.0"
+paths:
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Вход по логину и паролю
+      parameters:
+      - description: SignIn information
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/auth.signInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.Auth'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/core.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core.errorResponse'
+      summary: Вход
+      tags:
+      - auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -37,6 +37,13 @@ func (s *server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
+// @title           Swagger Back API
+// @version         1.0
+// @description     This is a sample REST API server.
+// @BasePath  /
+// @securityDefinitions.apiKey  ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	cfg := config.GetInstance()
 
