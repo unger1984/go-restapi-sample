@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"log"
 	"time"
 )
 
@@ -32,7 +31,6 @@ func NewService(userService users.UserService, cfg *config.Config) *Service {
 
 func (s *Service) SignIn(login string, password string) (*Auth, error) {
 	hashedPassword := s.generatePasswordHash(password)
-	log.Println(hashedPassword)
 	user, err := s.userService.GetByEmailPassword(login, hashedPassword)
 	if err != nil {
 		return nil, errors.New("login and password incorrect")

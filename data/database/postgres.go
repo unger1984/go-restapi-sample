@@ -4,6 +4,7 @@ import (
 	"awcoding.com/back/infrastructure/config"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"strings"
 )
 
 func ConnectPostgresDB(cfg config.DBConfig) (*sqlx.DB, error) {
@@ -15,6 +16,10 @@ func ConnectPostgresDB(cfg config.DBConfig) (*sqlx.DB, error) {
 		return nil, err
 	}
 
+	db.MapperFunc(func(s string) string {
+		//fmt.Println(strings.ToLower(s[:1]) + s[1:])
+		return strings.ToLower(s[:1]) + s[1:]
+	})
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}

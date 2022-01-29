@@ -26,7 +26,7 @@ func NewHandler(s *core.AppServices, cfg *config.Config) http.Handler {
 	router := gin.New()
 
 	if cfg.ENV != "production" && cfg.HttpServerConfig.Static != "" {
-		router.Static("/upload", cfg.HttpServerConfig.Static)
+		router.Static("/uploads", cfg.HttpServerConfig.Static)
 	}
 
 	// For 404

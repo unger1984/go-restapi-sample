@@ -1,19 +1,18 @@
 package users
 
 import (
+	"awcoding.com/back/data/uploads"
 	domain "awcoding.com/back/domain/users"
 )
 
 type User struct {
-	Id       int    `json:"id" db:"id"`
-	Email    string `json:"email" db:"email" binding:"required"`
-	Password string `json:"-" db:"password"`
+	Id       int             `db:"id"`
+	Email    string          `db:"email" binding:"required"`
+	AvatarId *int            `db:"avatarId" `
+	Password string          `db:"password"`
+	Avatar   *uploads.Upload `db:"avatar"`
 }
 
-func (u User) toEntity() *domain.User {
-	return &domain.User{Id: u.Id, Email: u.Email, Password: u.Password}
-}
-
-func fromEntity(u *domain.User) *User {
-	return &User{Id: u.Id, Email: u.Email, Password: u.Password}
+func (u User) ToEntity() *domain.User {
+	return &domain.User{Id: u.Id, Email: u.Email, Password: u.Password, AvatarId: u.AvatarId, Avatar: u.Avatar.ToEntity()}
 }

@@ -2,7 +2,6 @@ package users
 
 import (
 	domain "awcoding.com/back/domain/users"
-	"fmt"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,18 +15,30 @@ func NewRepository(db *sqlx.DB) *Repository {
 
 func (r *Repository) GetById(id int) (*domain.User, error) {
 	var user User
-	query := fmt.Sprintf("SELECT u.id, u.email, u.password FROM %s as u WHERE u.id=$1", "users")
+	query := `
+SELECT "User".*, avatar."id" as "avatar.id", avatar."path" "avatar.path", 
+		avatar."name" "avatar.name", avatar."type" "avatar.type" 
+FROM "User" 
+LEFT JOIN "Upload" as avatar ON avatar."id"="User"."avatarId" 
+WHERE "User"."id"=$1`
 	if err := r.db.Get(&user, query, id); err != nil {
 		return nil, err
 	}
-	return user.toEntity(), nil
+	return user.ToEntity(), nil
 }
 
 func (r *Repository) GetByEmailPassword(email string, password string) (*domain.User, error) {
 	var user User
-	query := fmt.Sprintf("SELECT u.id, u.email, u.password FROM %s as u WHERE u.email=$1 and u.password ilike $2", "users")
-	if err := r.db.Get(&user, query, email, password); err != nil {
+	query := `
+SELECT "User".*, avatar."id" as "avatar.id", avatar."path" "avatar.path",
+		avatar."name" "avatar.name", avatar."type" "avatar.type"
+FROM "User"
+LEFT JOIN "Upload" as avatar ON avatar."id"="User"."avatarId"
+WHERE "User"."email"=$1 and "User"."password" ilike $2`
+	rdb := r.db.Unsafe()
+	if err := rdb.Get(&user, query, email, password); err != nil {
+		panic(err)
 		return nil, err
 	}
-	return user.toEntity(), nil
+	return user.ToEntity(), nil
 }
