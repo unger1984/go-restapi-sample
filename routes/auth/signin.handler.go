@@ -3,6 +3,7 @@ package auth
 import (
 	domain "awcoding.com/back/domain/auth"
 	"awcoding.com/back/domain/core"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -21,16 +22,16 @@ func signIn(ctx *gin.Context, s domain.AuthService) {
 	var input signInInput
 
 	if err := ctx.BindJSON(&input); err != nil {
-		core.NewErrorResponse(ctx, http.StatusBadRequest, "invalid input body")
+		core.NewErrorResponse(ctx, http.StatusBadRequest, errors.New("invalid input body"))
 		return
 	}
 
 	res, err := s.SignIn(input.Login, input.Password)
 	if err != nil {
 		if err.Error() == "login and password incorrect" {
-			core.NewErrorResponse(ctx, http.StatusUnauthorized, err.Error())
+			core.NewErrorResponse(ctx, http.StatusUnauthorized, err)
 		} else {
-			core.NewErrorResponse(ctx, http.StatusInternalServerError, err.Error())
+			core.NewErrorResponse(ctx, http.StatusInternalServerError, err)
 		}
 		return
 	}

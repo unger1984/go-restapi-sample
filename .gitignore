@@ -18,6 +18,7 @@
 
 # build output
 build
+upload/
 
 # Enviroment variables
 .env

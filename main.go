@@ -9,7 +9,8 @@ import (
 	"awcoding.com/back/infrastructure/config"
 	"awcoding.com/back/routes"
 	"context"
-	"log"
+	"errors"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"os/signal"
@@ -21,7 +22,7 @@ type server struct {
 	httpServer *http.Server
 }
 
-func (s *server) Run(config config.HttpServerConfig, handler http.Handler, isProduction bool) error {
+func (s *server) Run(config config.HttpServerConfig, handler http.Handler) error {
 	s.httpServer = &http.Server{
 		Addr:           config.Host + ":" + config.Port,
 		Handler:        handler,
@@ -48,16 +49,16 @@ func main() {
 	cfg := config.GetInstance()
 
 	if err := config.Load(cfg); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	db, err := database.ConnectPostgresDB(cfg.DBConfig)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	if err := database.ApplyMigrations(db.DB, cfg.DBConfig.MigrationsPath); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	usersRepository := datUsers.NewRepository(db)
@@ -65,26 +66,28 @@ func main() {
 	authService := auth.NewService(userService, cfg)
 	appServices := core.NewAppService(userService, authService)
 
-	handler := routes.NewHandler(appServices)
+	handler := routes.NewHandler(appServices, cfg)
 	srv := new(server)
 
 	go func() {
-		if err := srv.Run(cfg.HttpServerConfig, handler, cfg.ENV == "production"); err != nil {
-			log.Fatalf("error occured while running http server: %s", err.Error())
+		if err := srv.Run(cfg.HttpServerConfig, handler); err != nil && errors.Is(err, http.ErrServerClosed) {
+			logrus.Printf("listen: %s\n", err)
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
+	logrus.Println("Graceful shutting down...")
 
-	log.Println("Graceful shutting down...")
+	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	if err := srv.Shutdown(context.Background()); err != nil {
-		log.Fatalf("error occured on server shutting down: %s", err.Error())
+		logrus.Fatal("Server forced to shutdown: %s", err)
 	}
 
-	//if err := db.Close(); err != nil {
-	//	log.Fatalf("error occured on db connection close: %s", err.Error())
-	//}
+	if err := db.Close(); err != nil {
+		logrus.Fatalf("error occured on db connection close: %s", err.Error())
+	}
 }

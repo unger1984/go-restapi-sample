@@ -12,6 +12,7 @@ type HttpServerConfig struct {
 	Port    string
 	CertPem string
 	CertKey string
+	Static  string
 }
 
 type DBConfig struct {
@@ -87,6 +88,7 @@ func loadEnvs(c *Config) {
 	serverConfig.CertPem = getEnv("ssl.cert", "")
 	serverConfig.Host = getEnv("server.host", "")
 	serverConfig.Port = getEnv("server.port", "8443")
+	serverConfig.Static = getEnv("server.static", "")
 
 	dbConfig := DBConfig{}
 	dbConfig.Host = getEnv("db.host", "localhost")
