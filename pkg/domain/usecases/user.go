@@ -4,11 +4,13 @@ import (
 	"awcoding.com/back/pkg/domain/entities"
 )
 
+// UserRepository is repository template
 type UserRepository interface {
 	GetById(id int) (*entities.User, error)
 	GetByEmailPassword(email string, password string) (*entities.User, error)
 }
 
+// UserCases is usecase interfece duplicate repository
 type UserCases interface {
 	GetById(id int) (*entities.User, error)
 	GetByEmailPassword(email string, password string) (*entities.User, error)

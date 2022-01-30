@@ -3,7 +3,7 @@ package usecases
 import (
 	"awcoding.com/back/pkg/domain/entities"
 	"awcoding.com/back/pkg/infrastructure/config"
-	"crypto/sha1"
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
@@ -15,7 +15,7 @@ type AuthCases interface {
 	GetByToken(token string) (*entities.User, error)
 }
 
-type authCasea struct {
+type authCases struct {
 	userService UserCases
 	cfg         *config.Config
 }
@@ -25,11 +25,11 @@ type tokenClaims struct {
 	UserId int `json:"user_id"`
 }
 
-func NewAuthCases(userService UserCases, cfg *config.Config) *authCasea {
-	return &authCasea{userService: userService, cfg: cfg}
+func NewAuthCases(userService UserCases, cfg *config.Config) *authCases {
+	return &authCases{userService: userService, cfg: cfg}
 }
 
-func (s *authCasea) SignIn(login string, password string) (*entities.Auth, error) {
+func (s *authCases) SignIn(login string, password string) (*entities.Auth, error) {
 	hashedPassword := s.generatePasswordHash(password)
 	user, err := s.userService.GetByEmailPassword(login, hashedPassword)
 	if err != nil {
@@ -43,7 +43,7 @@ func (s *authCasea) SignIn(login string, password string) (*entities.Auth, error
 	return &entities.Auth{Token: token, User: user}, nil
 }
 
-func (s *authCasea) GetByToken(token string) (*entities.User, error) {
+func (s *authCases) GetByToken(token string) (*entities.User, error) {
 	id, err := s.parseToken(token)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (s *authCasea) GetByToken(token string) (*entities.User, error) {
 	return user, nil
 }
 
-func (s *authCasea) generateToken(user *entities.User) (string, error) {
+func (s *authCases) generateToken(user *entities.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(12 * time.Hour).Unix(),
@@ -67,7 +67,7 @@ func (s *authCasea) generateToken(user *entities.User) (string, error) {
 	return token.SignedString([]byte(s.cfg.Secret.TokenKey))
 }
 
-func (s *authCasea) parseToken(accessToken string) (int, error) {
+func (s *authCases) parseToken(accessToken string) (int, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -87,8 +87,8 @@ func (s *authCasea) parseToken(accessToken string) (int, error) {
 	return claims.UserId, nil
 }
 
-func (s *authCasea) generatePasswordHash(password string) string {
-	hash := sha1.New()
+func (s *authCases) generatePasswordHash(password string) string {
+	hash := md5.New()
 	hash.Write([]byte(password))
 
 	return fmt.Sprintf("%x", hash.Sum([]byte(s.cfg.Secret.Salt)))

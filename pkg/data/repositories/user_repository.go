@@ -38,7 +38,6 @@ LEFT JOIN "Upload" as avatar ON avatar."id"="User"."avatarId"
 WHERE "User"."email"=$1 and "User"."password" ilike $2`
 	rdb := r.db.Unsafe()
 	if err := rdb.Get(&user, query, email, password); err != nil {
-		panic(err)
 		return nil, err
 	}
 	return user.ToEntity(), nil
