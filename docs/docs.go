@@ -43,7 +43,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.signInInput"
+                            "$ref": "#/definitions/auth_controller.signInInput"
                         }
                     }
                 ],
@@ -51,19 +51,19 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.Auth"
+                            "$ref": "#/definitions/entities.Auth"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/core.errorResponse"
+                            "$ref": "#/definitions/response.errorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/core.errorResponse"
+                            "$ref": "#/definitions/response.errorResponse"
                         }
                     }
                 }
@@ -71,18 +71,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "auth.Auth": {
-            "type": "object",
-            "properties": {
-                "token": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/users.User"
-                }
-            }
-        },
-        "auth.signInInput": {
+        "auth_controller.signInInput": {
             "type": "object",
             "required": [
                 "login",
@@ -97,22 +86,56 @@ var doc = `{
                 }
             }
         },
-        "core.errorResponse": {
+        "entities.Auth": {
             "type": "object",
             "properties": {
-                "message": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/entities.User"
+                }
+            }
+        },
+        "entities.Upload": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
         },
-        "users.User": {
+        "entities.User": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "$ref": "#/definitions/entities.Upload"
+                },
+                "avatarId": {
+                    "type": "integer"
+                },
                 "email": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
+                }
+            }
+        },
+        "response.errorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
                 }
             }
         }

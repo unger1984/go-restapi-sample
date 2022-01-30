@@ -1,7 +1,7 @@
 package database
 
 import (
-	"awcoding.com/back/src/infrastructure/config"
+	"awcoding.com/back/pkg/infrastructure/config"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"strings"

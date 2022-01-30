@@ -1,7 +1,7 @@
-package uploads
+package models
 
 import (
-	domain "awcoding.com/back/src/domain/uploads"
+	"awcoding.com/back/pkg/domain/entities"
 )
 
 type Upload struct {
@@ -11,8 +11,8 @@ type Upload struct {
 	Type *string `db:"type"`
 }
 
-func (u *Upload) ToEntity() *domain.Upload {
-	return &domain.Upload{
+func (u *Upload) ToEntity() *entities.Upload {
+	return &entities.Upload{
 		Id:   u.Id,
 		Path: u.Path,
 		Name: u.Name,

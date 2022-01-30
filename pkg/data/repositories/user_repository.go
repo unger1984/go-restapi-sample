@@ -1,20 +1,21 @@
-package users
+package repositories
 
 import (
-	domain "awcoding.com/back/src/domain/users"
+	"awcoding.com/back/pkg/data/models"
+	"awcoding.com/back/pkg/domain/entities"
 	"github.com/jmoiron/sqlx"
 )
 
-type Repository struct {
+type UserRepository struct {
 	db *sqlx.DB
 }
 
-func NewRepository(db *sqlx.DB) *Repository {
-	return &Repository{db: db}
+func NewUserRepository(db *sqlx.DB) *UserRepository {
+	return &UserRepository{db: db}
 }
 
-func (r *Repository) GetById(id int) (*domain.User, error) {
-	var user User
+func (r *UserRepository) GetById(id int) (*entities.User, error) {
+	var user models.User
 	query := `
 SELECT "User".*, avatar."id" as "avatar.id", avatar."path" "avatar.path", 
 		avatar."name" "avatar.name", avatar."type" "avatar.type" 
@@ -27,8 +28,8 @@ WHERE "User"."id"=$1`
 	return user.ToEntity(), nil
 }
 
-func (r *Repository) GetByEmailPassword(email string, password string) (*domain.User, error) {
-	var user User
+func (r *UserRepository) GetByEmailPassword(email string, password string) (*entities.User, error) {
+	var user models.User
 	query := `
 SELECT "User".*, avatar."id" as "avatar.id", avatar."path" "avatar.path",
 		avatar."name" "avatar.name", avatar."type" "avatar.type"

@@ -1,13 +1,6 @@
 basePath: /
 definitions:
-  auth.Auth:
-    properties:
-      token:
-        type: string
-      user:
-        $ref: '#/definitions/users.User'
-    type: object
-  auth.signInInput:
+  auth_controller.signInInput:
     properties:
       login:
         type: string
@@ -17,17 +10,39 @@ definitions:
     - login
     - password
     type: object
-  core.errorResponse:
+  entities.Auth:
     properties:
-      message:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/entities.User'
+    type: object
+  entities.Upload:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      path:
+        type: string
+      type:
         type: string
     type: object
-  users.User:
+  entities.User:
     properties:
+      avatar:
+        $ref: '#/definitions/entities.Upload'
+      avatarId:
+        type: integer
       email:
         type: string
       id:
         type: integer
+    type: object
+  response.errorResponse:
+    properties:
+      message:
+        type: string
     type: object
 info:
   contact: {}
@@ -46,22 +61,22 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/auth.signInInput'
+          $ref: '#/definitions/auth_controller.signInInput'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.Auth'
+            $ref: '#/definitions/entities.Auth'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/core.errorResponse'
+            $ref: '#/definitions/response.errorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/core.errorResponse'
+            $ref: '#/definitions/response.errorResponse'
       summary: Вход
       tags:
       - auth

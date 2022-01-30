@@ -1,13 +1,11 @@
 package main
 
 import (
-	database2 "awcoding.com/back/src/data/database"
-	datUsers "awcoding.com/back/src/data/users"
-	"awcoding.com/back/src/domain/auth"
-	"awcoding.com/back/src/domain/core"
-	"awcoding.com/back/src/domain/users"
-	"awcoding.com/back/src/infrastructure/config"
-	"awcoding.com/back/src/routes"
+	"awcoding.com/back/pkg/controllers/restapi"
+	"awcoding.com/back/pkg/data/database"
+	"awcoding.com/back/pkg/data/repositories"
+	"awcoding.com/back/pkg/domain/usecases"
+	"awcoding.com/back/pkg/infrastructure/config"
 	"context"
 	"errors"
 	"flag"
@@ -60,25 +58,25 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	db, err := database2.ConnectPostgresDB(cfg.DBConfig)
+	db, err := database.ConnectPostgresDB(cfg.DBConfig)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	if err := database2.ApplyMigrations(db.DB, cfg.DBConfig.MigrationsPath); err != nil {
+	if err := database.ApplyMigrations(db.DB, cfg.DBConfig.MigrationsPath); err != nil {
 		logrus.Fatal(err)
 	}
 
-	usersRepository := datUsers.NewRepository(db)
-	userService := users.NewService(usersRepository)
-	authService := auth.NewService(userService, cfg)
-	appServices := core.NewAppService(userService, authService)
+	usersRepository := repositories.NewUserRepository(db)
+	userCases := usecases.NewUserCases(usersRepository)
+	authCases := usecases.NewAuthCases(userCases, cfg)
 
-	handler := routes.NewHandler(appServices, cfg)
+	controller := restapi.NewServer(userCases, authCases, *cfg)
+
 	srv := new(server)
 
 	go func() {
-		if err := srv.Run(cfg.HttpServerConfig, handler); err != nil && errors.Is(err, http.ErrServerClosed) {
+		if err := srv.Run(cfg.HttpServerConfig, controller.NewdHandler()); err != nil && errors.Is(err, http.ErrServerClosed) {
 			logrus.Printf("listen: %s\n", err)
 		}
 	}()

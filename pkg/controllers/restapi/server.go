@@ -1,11 +1,12 @@
-package routes
+package restapi
 
 import (
 	_ "awcoding.com/back/docs"
-	core2 "awcoding.com/back/src/domain/core"
-	"awcoding.com/back/src/domain/users"
-	"awcoding.com/back/src/infrastructure/config"
-	auth2 "awcoding.com/back/src/routes/auth"
+	"awcoding.com/back/pkg/controllers/restapi/auth_controller"
+	"awcoding.com/back/pkg/controllers/restapi/response"
+	"awcoding.com/back/pkg/domain/entities"
+	"awcoding.com/back/pkg/domain/usecases"
+	"awcoding.com/back/pkg/infrastructure/config"
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/cors"
@@ -16,8 +17,22 @@ import (
 	"time"
 )
 
-func NewHandler(s *core2.AppServices, cfg *config.Config) http.Handler {
-	if cfg.Env == "production" {
+type Server struct {
+	UserCases usecases.UserCases
+	AuthCases usecases.AuthCases
+	Config    config.Config
+}
+
+func NewServer(userCases usecases.UserCases, authCases usecases.AuthCases, cfg config.Config) *Server {
+	return &Server{
+		AuthCases: authCases,
+		UserCases: userCases,
+		Config:    cfg,
+	}
+}
+
+func (s *Server) NewdHandler() http.Handler {
+	if s.Config.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		gin.ForceConsoleColor()
@@ -25,13 +40,13 @@ func NewHandler(s *core2.AppServices, cfg *config.Config) http.Handler {
 
 	router := gin.New()
 
-	if cfg.Env != "production" && cfg.HttpServerConfig.Static != "" {
-		router.Static("/uploads", cfg.HttpServerConfig.Static)
+	if s.Config.Env != "production" && s.Config.HttpServerConfig.Static != "" {
+		router.Static("/uploads", s.Config.HttpServerConfig.Static)
 	}
 
 	// For 404
 	router.NoRoute(func(ctx *gin.Context) {
-		core2.NewErrorResponse(ctx, http.StatusNotFound, errors.New("not found"))
+		response.NewErrorResponse(ctx, http.StatusNotFound, errors.New("not found"))
 	})
 
 	// For logging
@@ -47,7 +62,7 @@ func NewHandler(s *core2.AppServices, cfg *config.Config) http.Handler {
 				param.Latency = param.Latency - param.Latency%time.Second
 			}
 			// your custom format
-			return fmt.Sprintf("%s %s%3d%s %s \"%s\" %13v %15s %s",
+			return fmt.Sprintf("%s %s%3d%s %6s \"%s\" %13v %15s %s\n",
 				param.TimeStamp.Format("02.01.2006 15:04:05"),
 				statusColor, param.StatusCode, resetColor,
 				param.Method,
@@ -73,14 +88,16 @@ func NewHandler(s *core2.AppServices, cfg *config.Config) http.Handler {
 	// For Swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	authController := auth_controller.NewAuthController(s.AuthCases)
 	authGroup := router.Group("/auth")
-	auth2.NewRoutesFactory(authGroup)(s.AuthService)
+	authController.NewRoutes(authGroup)
+
 	apiGroup := router.Group("/api")
 	{
-		apiGroup.Use(auth2.NewJWTMiddlewareFactory(s.AuthService))
+		apiGroup.Use(authController.VerifyJWT)
 
 		apiGroup.GET("test", func(ctx *gin.Context) {
-			user := ctx.MustGet("user").(*users.User)
+			user := ctx.MustGet("user").(*entities.User)
 			ctx.JSON(http.StatusOK, user)
 		})
 	}

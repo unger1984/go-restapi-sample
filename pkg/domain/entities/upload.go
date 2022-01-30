@@ -1,4 +1,4 @@
-package uploads
+package entities
 
 type Upload struct {
 	Id   *int    `json:"id"`
