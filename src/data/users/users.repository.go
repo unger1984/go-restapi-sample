@@ -1,7 +1,7 @@
 package users
 
 import (
-	domain "awcoding.com/back/domain/users"
+	domain "awcoding.com/back/src/domain/users"
 	"github.com/jmoiron/sqlx"
 )
 

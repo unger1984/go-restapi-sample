@@ -1,8 +1,8 @@
 package users
 
 import (
-	"awcoding.com/back/data/uploads"
-	domain "awcoding.com/back/domain/users"
+	"awcoding.com/back/src/data/uploads"
+	domain "awcoding.com/back/src/domain/users"
 )
 
 type User struct {

@@ -1,7 +1,7 @@
 package uploads
 
 import (
-	domain "awcoding.com/back/domain/uploads"
+	domain "awcoding.com/back/src/domain/uploads"
 )
 
 type Upload struct {

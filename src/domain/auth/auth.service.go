@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"awcoding.com/back/domain/users"
-	"awcoding.com/back/infrastructure/config"
+	users2 "awcoding.com/back/src/domain/users"
+	"awcoding.com/back/src/infrastructure/config"
 	"crypto/sha1"
 	"errors"
 	"fmt"
@@ -12,11 +12,11 @@ import (
 
 type AuthService interface {
 	SignIn(login string, password string) (*Auth, error)
-	GetByToken(token string) (*users.User, error)
+	GetByToken(token string) (*users2.User, error)
 }
 
 type Service struct {
-	userService users.UserService
+	userService users2.UserService
 	cfg         *config.Config
 }
 
@@ -25,7 +25,7 @@ type tokenClaims struct {
 	UserId int `json:"user_id"`
 }
 
-func NewService(userService users.UserService, cfg *config.Config) *Service {
+func NewService(userService users2.UserService, cfg *config.Config) *Service {
 	return &Service{userService: userService, cfg: cfg}
 }
 
@@ -43,7 +43,7 @@ func (s *Service) SignIn(login string, password string) (*Auth, error) {
 	return &Auth{Token: token, User: user}, nil
 }
 
-func (s *Service) GetByToken(token string) (*users.User, error) {
+func (s *Service) GetByToken(token string) (*users2.User, error) {
 	id, err := s.parseToken(token)
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (s *Service) GetByToken(token string) (*users.User, error) {
 	return user, nil
 }
 
-func (s *Service) generateToken(user *users.User) (string, error) {
+func (s *Service) generateToken(user *users2.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(12 * time.Hour).Unix(),

@@ -1,8 +1,8 @@
 package core
 
 import (
-	"awcoding.com/back/domain/auth"
-	"awcoding.com/back/domain/users"
+	"awcoding.com/back/src/domain/auth"
+	"awcoding.com/back/src/domain/users"
 )
 
 type AppServices struct {

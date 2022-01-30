@@ -1,15 +1,16 @@
 package main
 
 import (
-	"awcoding.com/back/data/database"
-	datUsers "awcoding.com/back/data/users"
-	"awcoding.com/back/domain/auth"
-	"awcoding.com/back/domain/core"
-	"awcoding.com/back/domain/users"
-	"awcoding.com/back/infrastructure/config"
-	"awcoding.com/back/routes"
+	database2 "awcoding.com/back/src/data/database"
+	datUsers "awcoding.com/back/src/data/users"
+	"awcoding.com/back/src/domain/auth"
+	"awcoding.com/back/src/domain/core"
+	"awcoding.com/back/src/domain/users"
+	"awcoding.com/back/src/infrastructure/config"
+	"awcoding.com/back/src/routes"
 	"context"
 	"errors"
+	"flag"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -46,18 +47,25 @@ func (s *server) Shutdown(ctx context.Context) error {
 // @in header
 // @name Authorization
 func main() {
-	cfg := config.GetInstance()
-
-	if err := config.Load(cfg); err != nil {
-		logrus.Fatal(err)
+	flgConfigPath := flag.String("config", "", "Path to config")
+	var configPath string
+	if len(*flgConfigPath) == 0 {
+		configPath = "./config.yaml"
+	} else {
+		configPath = *flgConfigPath
 	}
 
-	db, err := database.ConnectPostgresDB(cfg.DBConfig)
+	cfg, err := config.LoadConfig(configPath)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	if err := database.ApplyMigrations(db.DB, cfg.DBConfig.MigrationsPath); err != nil {
+	db, err := database2.ConnectPostgresDB(cfg.DBConfig)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	if err := database2.ApplyMigrations(db.DB, cfg.DBConfig.MigrationsPath); err != nil {
 		logrus.Fatal(err)
 	}
 

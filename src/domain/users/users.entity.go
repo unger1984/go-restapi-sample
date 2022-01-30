@@ -1,6 +1,8 @@
 package users
 
-import "awcoding.com/back/domain/uploads"
+import (
+	"awcoding.com/back/src/domain/uploads"
+)
 
 type User struct {
 	Id       int             `json:"id"`

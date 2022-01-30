@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"awcoding.com/back/domain/auth"
-	"awcoding.com/back/domain/core"
+	"awcoding.com/back/src/domain/auth"
+	"awcoding.com/back/src/domain/core"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
