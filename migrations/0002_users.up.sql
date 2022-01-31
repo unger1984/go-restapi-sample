@@ -3,7 +3,9 @@ CREATE TABLE "User"
     "id"          serial       PRIMARY KEY ,
     "email"       varchar(255) not null unique,
     "password"    varchar(255) not null,
-    "avatarId"    int4
+    "avatarId"    integer,
+    "created_at" timestamptz(6) NOT NULL,
+    "updated_at" timestamptz(6) NOT NULL
 );
 COMMENT ON COLUMN "User"."email" IS 'Уникальный Email';
 COMMENT ON COLUMN "User"."password" IS 'Пароль пользователя';

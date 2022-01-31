@@ -10,6 +10,8 @@ import (
 	"errors"
 	"flag"
 	"github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"net/http"
 	"os"
 	"os/signal"
@@ -59,13 +61,21 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	db, err := database.ConnectPostgresDB(cfg.DBConfig)
+	sqlDB, err := database.ConnectPostgresDB(cfg.DBConfig)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 
-	if err := database.ApplyMigrations(db.DB, cfg.DBConfig.MigrationsPath); err != nil {
+	if err := database.ApplyMigrations(sqlDB, cfg.DBConfig.MigrationsPath); err != nil {
 		logrus.Fatal(err)
+	}
+
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{})
+
+	if cfg.Env == "development" {
+		db = db.Debug()
 	}
 
 	usersRepository := repositories.NewUserRepository(db)
@@ -94,7 +104,7 @@ func main() {
 		logrus.Fatal("Server forced to shutdown: %s", err)
 	}
 
-	if err := db.Close(); err != nil {
-		logrus.Fatalf("error occured on db connection close: %s", err.Error())
+	if err := sqlDB.Close(); err != nil {
+		logrus.Fatalf("error occured on sqlDB connection close: %s", err.Error())
 	}
 }
