@@ -15,8 +15,8 @@ FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/server .
 COPY ./migrations ./migrations
-COPY ./config.production.yaml config.yaml
+COPY ./config.production.yaml /app/config.yaml
 
 EXPOSE 8080
 
-CMD ["./server", "--config=\"./config.yaml\""]
+CMD ["./server", "--config=/app/config.yaml"]
