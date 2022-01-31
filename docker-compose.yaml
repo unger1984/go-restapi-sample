@@ -8,21 +8,25 @@ services:
     volumes:
       - pgdata:/pgdata
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=test
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+      - POSTGRES_DB=${PG_DATABASE}
       - PGDATA=pgdata
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${PG_PORT}:5432"
 
   app:
     hostname: app
-#    restart: always
-    build: .
+    build:
+      context: .
+      args:
+        - APP_CONFIG=${APP_CONFIG}
+    env_file:
+      - .env
     volumes:
       - ./upload:/app/upload
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${APP_PORT}:8080"
     depends_on:
       - db
 

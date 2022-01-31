@@ -12,10 +12,11 @@ RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -trimpath -a -o ./server -ldf
 # app
 FROM alpine:latest
 
+ARG APP_CONFIG
 WORKDIR /app
 COPY --from=builder /app/server .
 COPY ./migrations ./migrations
-COPY ./config.production.yaml /app/config.yaml
+COPY ./config.${APP_CONFIG}.yaml /app/config.yaml
 
 EXPOSE 8080
 
