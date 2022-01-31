@@ -1,0 +1,31 @@
+version: '3.1'
+
+services:
+  db:
+    hostname: db
+    image: postgres:13.5
+    restart: always
+    volumes:
+      - pgdata:/pgdata
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=test
+      - PGDATA=pgdata
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  app:
+    hostname: app
+#    restart: always
+    build: .
+    volumes:
+      - ./upload:/app/upload
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+

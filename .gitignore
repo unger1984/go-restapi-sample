@@ -23,3 +23,5 @@ upload/
 # Enviroment variables
 .env
 config.yaml
+*.production.yaml
+*.development.yaml

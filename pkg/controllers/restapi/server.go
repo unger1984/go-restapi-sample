@@ -62,7 +62,7 @@ func (s *Server) NewdHandler() http.Handler {
 				param.Latency = param.Latency - param.Latency%time.Second
 			}
 			// your custom format
-			return fmt.Sprintf("%s %s%3d%s %6s \"%s\" %13v %15s %s\n",
+			return fmt.Sprintf("%s %s%3d%s %6s \"%s\" %13v %15s %s",
 				param.TimeStamp.Format("02.01.2006 15:04:05"),
 				statusColor, param.StatusCode, resetColor,
 				param.Method,

@@ -21,21 +21,29 @@ type server struct {
 	httpServer *http.Server
 }
 
-func (s *server) Run(config config.HttpServerConfig, handler http.Handler) error {
+func (s *server) Run(cfg *config.Config, handler http.Handler) error {
 	s.httpServer = &http.Server{
-		Addr:           config.Host + ":" + config.Port,
+		Addr:           cfg.HttpServerConfig.Host + ":" + cfg.HttpServerConfig.Port,
 		Handler:        handler,
 		MaxHeaderBytes: 1 << 20,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 	}
 
-	return s.httpServer.ListenAndServeTLS(config.CertPem, config.CertKey)
+	if cfg.Env == "production" {
+		return s.httpServer.ListenAndServe()
+	} else {
+		return s.httpServer.ListenAndServeTLS(cfg.HttpServerConfig.CertPem, cfg.HttpServerConfig.CertKey)
+	}
 }
 
 func (s *server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
+
+var (
+	configPath = flag.String("config", "./config.development.yaml", "Path to config")
+)
 
 // @title           Swagger Back API
 // @version         1.0
@@ -45,15 +53,8 @@ func (s *server) Shutdown(ctx context.Context) error {
 // @in header
 // @name Authorization
 func main() {
-	flgConfigPath := flag.String("config", "", "Path to config")
-	var configPath string
-	if len(*flgConfigPath) == 0 {
-		configPath = "./config.yaml"
-	} else {
-		configPath = *flgConfigPath
-	}
-
-	cfg, err := config.LoadConfig(configPath)
+	flag.Parse()
+	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -76,7 +77,7 @@ func main() {
 	srv := new(server)
 
 	go func() {
-		if err := srv.Run(cfg.HttpServerConfig, controller.NewdHandler()); err != nil && errors.Is(err, http.ErrServerClosed) {
+		if err := srv.Run(cfg, controller.NewdHandler()); err != nil && errors.Is(err, http.ErrServerClosed) {
 			logrus.Printf("listen: %s\n", err)
 		}
 	}()
