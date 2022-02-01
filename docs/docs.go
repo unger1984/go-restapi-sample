@@ -43,7 +43,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth_controller.signInInput"
+                            "$ref": "#/definitions/auth_controller.SignInInput"
                         }
                     }
                 ],
@@ -71,7 +71,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "auth_controller.signInInput": {
+        "auth_controller.SignInInput": {
             "type": "object",
             "required": [
                 "login",

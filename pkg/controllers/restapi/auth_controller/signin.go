@@ -12,13 +12,13 @@ import (
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        input body signInInput true  "SignIn information"
+// @Param        input body SignInInput true  "SignIn information"
 // @Success      200  {object}  entities.Auth
 // @Failure      400  {object}  response.errorResponse
 // @Failure      500  {object}  response.errorResponse
 // @Router       /auth/sign-in [post]
 func (a *AuthController) signIn(ctx *gin.Context) {
-	var input signInInput
+	var input SignInInput
 
 	if err := ctx.BindJSON(&input); err != nil {
 		response.NewErrorResponse(ctx, http.StatusBadRequest, errors.New("invalid input body"))

@@ -71,8 +71,7 @@ func main() {
 	}
 
 	db, err := gorm.Open(
-		postgres.New(
-			postgres.Config{Conn: sqlDB}),
+		postgres.New(postgres.Config{Conn: sqlDB}),
 		&gorm.Config{},
 	)
 	if err != nil {

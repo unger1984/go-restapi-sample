@@ -4,6 +4,8 @@ import (
 	"awcoding.com/back/pkg/domain/entities"
 )
 
+//go:generate mockgen --source=user.go --destination=mocks/user_mock.go
+
 // UserRepository is repository template
 type UserRepository interface {
 	GetById(id int) (*entities.User, error)

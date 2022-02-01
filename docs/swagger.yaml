@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  auth_controller.signInInput:
+  auth_controller.SignInInput:
     properties:
       login:
         type: string
@@ -61,7 +61,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/auth_controller.signInInput'
+          $ref: '#/definitions/auth_controller.SignInInput'
       produces:
       - application/json
       responses:

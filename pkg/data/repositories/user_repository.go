@@ -7,15 +7,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+//go:generate mockgen --source=user_repository.go --destination=mocks/user_repository_mock.go
+
+type UserRepository interface {
+	GetById(id int) (*entities.User, error)
+	GetByEmailPassword(email string, password string) (*entities.User, error)
+}
+
+type userRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewUserRepository(db *gorm.DB) *userRepository {
+	return &userRepository{db: db}
 }
 
-func (r *UserRepository) GetById(id int) (*entities.User, error) {
+func (r *userRepository) GetById(id int) (*entities.User, error) {
 	var user models.User
 	if result := r.db.Joins("Avatar").First(&user, id); result.Error != nil {
 		return nil, result.Error
@@ -26,7 +33,7 @@ func (r *UserRepository) GetById(id int) (*entities.User, error) {
 	return user.ToEntity(), nil
 }
 
-func (r *UserRepository) GetByEmailPassword(email string, password string) (*entities.User, error) {
+func (r *userRepository) GetByEmailPassword(email string, password string) (*entities.User, error) {
 	var user models.User
 	if result := r.db.Joins("Avatar").Find(&user, "email=? and password iLike ?", email, password); result.Error != nil {
 		return nil, result.Error

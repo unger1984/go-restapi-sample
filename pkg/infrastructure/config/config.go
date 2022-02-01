@@ -94,4 +94,5 @@ func loadEnvs(c *Config) {
 
 	c.HttpServerConfig = serverConfig
 	c.DBConfig = dbConfig
+	c.Secret = secret
 }

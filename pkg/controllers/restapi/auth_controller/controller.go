@@ -5,7 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type signInInput struct {
+//go:generate mockgen --source=controller.go --destination=mocks/auth.mock.go
+
+type SignInInput struct {
 	Login    string `json:"login" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }

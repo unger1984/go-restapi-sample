@@ -1,0 +1,27 @@
+# Environment settings: development or production
+env: "production"
+
+# Server settings
+# key & cert - path to ssl keys
+# host & port - Host and Port to listen
+# static - path to directory for uploaded files
+server:
+  key: "key.pem"
+  cert: "chain.pem"
+  host: "0.0.0.0"
+  port: "8080"
+  static: "/upload"
+
+# DataBase settings
+db:
+  host: "localhost"
+  port: "5432"
+  username: "postgres"
+  password: "postgres"
+  name: "test"
+  sslmode: "disable"
+  migrationspath: "/migrations"
+
+secret:
+  salt: "_superSecretSalt_"
+  tokenkey: "_superSecretTokenKey_"

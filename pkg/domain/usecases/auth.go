@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen --source=auth.go --destination=mocks/auth_mock.go
+
 type AuthCases interface {
 	SignIn(login string, password string) (*entities.Auth, error)
 	GetByToken(token string) (*entities.User, error)
