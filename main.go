@@ -58,21 +58,26 @@ func main() {
 	flag.Parse()
 	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Fatalf("Error loading config: %v", err)
 	}
 
 	sqlDB, err := database.ConnectPostgresDB(cfg.DBConfig)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Fatalf("Error DB connection: %v", err)
 	}
 
 	if err := database.ApplyMigrations(sqlDB, cfg.DBConfig.MigrationsPath); err != nil {
-		logrus.Fatal(err)
+		logrus.Fatalf("Error DB migrations: %v", err)
 	}
 
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
+	db, err := gorm.Open(
+		postgres.New(
+			postgres.Config{Conn: sqlDB}),
+		&gorm.Config{},
+	)
+	if err != nil {
+		logrus.Fatalf("Error GORM opening: %v", err)
+	}
 
 	if cfg.Env == "development" {
 		db = db.Debug()
@@ -87,24 +92,34 @@ func main() {
 	srv := new(server)
 
 	go func() {
-		if err := srv.Run(cfg, controller.NewdHandler()); err != nil && errors.Is(err, http.ErrServerClosed) {
-			logrus.Printf("listen: %s\n", err)
+		err := srv.Run(cfg, controller.NewdHandler())
+		if err != nil && errors.Is(err, http.ErrServerClosed) {
+			logrus.Infof("Close listen on %s...", cfg.HttpServerConfig.Port)
+		} else {
+			logrus.Errorf("Failed to start http server at port %s:%s", cfg.HttpServerConfig.Host, cfg.HttpServerConfig.Port)
 		}
 	}()
+	logrus.Infof("Server start on %s:%s", cfg.HttpServerConfig.Host, cfg.HttpServerConfig.Port)
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-	<-quit
-	logrus.Println("Graceful shutting down...")
+	var gracefulStop = make(chan os.Signal, 1)
+	signal.Notify(gracefulStop, syscall.SIGINT, os.Interrupt, syscall.SIGTERM)
+
+	sig := <-gracefulStop
+	logrus.Warnf("caught sig: %+v", sig)
 
 	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	defer func() {
+		cancel()
+		logrus.Info("Server stopped")
+	}()
 
+	logrus.Info("Shutdown server...")
 	if err := srv.Shutdown(context.Background()); err != nil {
-		logrus.Fatal("Server forced to shutdown: %s", err)
+		logrus.Fatalf("Server forced to shutdown: %v", err)
 	}
 
+	logrus.Info("Close DB connection...")
 	if err := sqlDB.Close(); err != nil {
-		logrus.Fatalf("error occured on sqlDB connection close: %s", err.Error())
+		logrus.Fatalf("error occured on sqlDB connection close: %v", err)
 	}
 }
